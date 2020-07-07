@@ -6,9 +6,9 @@ import {
   View,
   Text,
   StatusBar,
-  Button
+  Button,
+  Dimensions
 } from 'react-native';
-import '../UserAgent';
 import {
   RTCPeerConnection,
   RTCIceCandidate,
@@ -19,40 +19,44 @@ import {
   mediaDevices,
   registerGlobals
 } from 'react-native-webrtc';
+import { Icon } from 'react-native-elements';
 import {connect} from 'react-redux'
-import { withSocketContext } from './SocketContext';
-  
+import InCallManager from 'react-native-incall-manager';
+var localStream;
+
 class Call extends React.Component{
 constructor(){
   super()
+   window.call = this;
   this.state={
     stream:null,
+    remoteStream:null,
+    connectedUser:null,
+    IsMuted:false
   }
-
-
-}
-
-componentDidMount() { 
-      this.call()
-      const { socket } = this.props;
-     socket.on('message', function(data){console.log(data)});
+  
 
 }
 
-call=async(callerId)=>{
-  const { socket } = this.props;
-  const configuration = {"iceServers":[
+componentDidMount(){
+    this.call()
+ }
+
+
+call=async()=>{
+    const configuration = {"iceServers":[
     { urls: "stun:stun.l.google.com:19302"},
     { urls: 'stun:stun.services.mozilla.com' },
     { urls: 'turn:numb.viagenie.ca', credential: 'shankarzkp@gmail.com', username: 'shikha@36' },
-   ]};
-  const pc = new RTCPeerConnection(configuration);
-  
+    ]};
+    
+    global.pc = new RTCPeerConnection(configuration);
     const isFront = true;
     const devices = await mediaDevices.enumerateDevices();
-      const facing = isFront ? 'front' : 'environment';
+    const facing = isFront ? 'front' : 'environment';
     const videoSourceId = devices.find(device => device.kind === 'videoinput' && device.facing === facing);
     const facingMode = isFront ? 'user' : 'environment';
+    
     const constraints = {
       audio: true,
       video: {
@@ -65,100 +69,169 @@ call=async(callerId)=>{
         optional: videoSourceId ? [{sourceId: videoSourceId}] : [],
       },
     };
-    const newStream = await mediaDevices.getUserMedia(constraints);
-    pc.addStream(newStream);
-    this.setState({stream:newStream})
 
-    pc.onicecandidate = (event)=>{
+    localStream = await mediaDevices.getUserMedia(constraints);
+    
+    
+    global.pc.addStream(localStream)
+    //console.log(global.pc)
+    this.setState({stream:localStream})
+    if(!!this.props.route.params &&this.props.route.params.data.type=="offer")
+     { 
+      window.home.callAccept(this.props.route.params)
+     this.setState({ connectedUser:this.props.route.params.data.callername})
+      }
+    else
+    {
+      this.call_user()
+    }
+
+    global.pc.onaddstream=(event)=>{
+      //console.log(event)
+      this.setState({remoteStream: event.currentTarget._remoteStreams[0]});
+     
+    }
+    global.pc.oniceconnectionstatechange =(event)=> {
+      //console.log(event)
+      //this.setState({remoteStream: event.currentTarget._remoteStreams[0]});
+        };
+        
+ }
+
+
+
+ call_user=()=>{
+   InCallManager.start({media: 'video', ringback: '_BUNDLE_'});
+   global.pc.onicecandidate = (event)=>{
   // send event.candidate to peer
       if (event.candidate) {
-          socket.send({
+          global.socket.send({
           type:"candidate",
           target:this.props.callee,
           candidate: event.candidate
            }
           );
-    }
+             }
 
    };
-
-    pc.createOffer().then(desc => {
-     pc.setLocalDescription(desc).then(() => {
-       if(!!socket && !!this.props.callee && !!this.props.My_Data )
-       { socket.send({
+  
+    global.pc.createOffer({ offerToReceiveAudio: 1,
+        offerToReceiveVideo: 1}).then(desc => {
+     global.pc.setLocalDescription(desc).then(() => {
+       if(!!this.props.callee && !!this.props.My_id )
+       { global.socket.send({
           type:"call_user",
           src:desc,
           name:this.props.callee,
-          callername: this.props.My_Data.id
-
+          callername: this.props.My_id
+     
          })
-   }
+      this.setState({connectedUser:this.props.callee})
+     }
      })
   })
 
+
+ }
+
+
+toggleMute = () => {
+    localStream.getAudioTracks().forEach(track => {
+      console.log(track.enabled ? 'muting' : 'unmuting', ' local track', track);
+      track.enabled = !track.enabled;
+    this.setState({IsMuted:!track.enabled});
+    });
+  };
+
+switchCamera = () => {
+    localStream.getVideoTracks().forEach(track => track._switchCamera());
+  };
+
+
+callDisconnect=()=>{
   
+  global.socket.send({
+    type:"leave",
+    target:this.state.connectedUser,
+    from:this.props.My_id
+  })
+  this.handleLeave()
+  
+}
+ 
+handleLeave=()=>{
+  console.log("in leave function")
+  
+  if (localStream != null) {
+    localStream.getTracks().forEach(t => t.stop())
+    localStream.release()
+    localStream = null
+    //this.setState({stream:null})
+ }
+ global.pc.close()
+ window.home.setBusyFalse()
+ this.props.navigation.navigate("Home") 
+}
 
-   socket.on('message',message=>{
-        var data = message;
-        console.log(data)
-        switch(data.type)
-        {
-          case 'call_response':
-             console.log("i m in call_response")
-             try{
-              const remoteDesc = new RTCSessionDescription(data.response);
-                   pc.setRemoteDescription(remoteDesc);
-                }catch(e)
-                {
-                    console.error('Error adding remote description', e);
-                }
-              break;
-          case "candidate":
-              if (data.candidate) {
-                 try {
-                       pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-                    } catch (e) {
-                        console.error('Error adding received ice candidate', e);
-                    }
-              }
-            break;
+renderMic=()=>{
+   if(this.state.IsMuted)
+   {
+     return (
+         <Icon
+        reverse
+        name="mic-off"
+        type="feather"
+        color="red"
+        onPress={()=>this.toggleMute()}
+        />
 
-        default:
-            console.log(data)
-          break;
+      );
+   }
+   else
+    {
+      return(
+         <Icon
+        raised
+        name="mic"
+        type="feather"
+        onPress={()=>this.toggleMute()}
+        />
 
-        }
-    })
-
- /*  socket.on('message', async message => {
-     console.log(message)
-    if (message.iceCandidate) {
-        try {
-            await pc.addIceCandidate(message.iceCandidate);
-        } catch (e) {
-            console.error('Error adding received ice candidate', e);
-        }
+        );
     }
-  });
- */
-pc.oniceconnectionstatechange = function(event){
-       console.log(event)
-    if (pc.connectionState === 'connected') {
-        // Peers connected!
-        console.log("peers connected")
-    }
-   };
 
 }
 
+
+
+
 render(){  
+
   return(
    <View style={styles.container}>
-    <View style={styles.rtcview}>
-       {!!this.state.stream && <RTCView style={styles.rtc} streamURL={this.state.stream.toURL()} />}
+  <View style={styles.rtcview}>
+  {!!this.state.stream && <RTCView style={styles.rtc} streamURL={this.state.stream.toURL()} />}
    </View>
-    <View style={styles.rtcview}>
-       {!!this.state.stream && <RTCView style={styles.rtc} streamURL={this.state.stream.toURL()} />}
+    <View style={styles.rtcview}> 
+ {!!this.state.remoteStream && <RTCView style={styles.rtc} streamURL={this.state.remoteStream.toURL()} />}
+    </View> 
+   <View style={styles.bottom}>
+     <View style={{flexDirection:'row'}}>
+        {this.renderMic()}
+       <Icon
+        reverse
+        name="call"
+        type="zocial"
+        color="red"
+        onPress={()=>this.callDisconnect()}
+        />
+       <Icon
+        raised
+        name="switch-video"
+        type="material-icons"
+        onPress={()=>this.switchCamera()}
+        />
+      </View>
    </View>
   </View>
 );
@@ -170,6 +243,7 @@ const styles = StyleSheet.create({
  
   container:{
     flex:1,
+    //position:'relative'
     justifyContent:'center',
     alignItems:'center',
    
@@ -186,16 +260,40 @@ const styles = StyleSheet.create({
     width: '80%',
     height: '100%',
   },
+  bottom:{
+    justifyContent:"flex-end",
+    marginBottom:14
+  },
+   localVideo: {
+    width: 100,
+    height: 100,
+    position: 'absolute',
+    right: 10,
+    bottom: 60,
+  },
+   remoteVideo: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    margin: 0,
+    padding: 0,
+    aspectRatio: 1,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
  
 });
 
 const mapStateToProps=(state)=>{ 
   return {
-    My_Data:state.my_data,
+    My_id:state.caller,
     callee:state.callee,
     
   }
  
 }
 
-export default connect(mapStateToProps)(withSocketContext(Call));
+export default connect(mapStateToProps)(Call);

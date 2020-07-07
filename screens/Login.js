@@ -68,7 +68,7 @@ const login = async() => {
         <View style={styles.container}>
         <View style={styles.formContainer}>
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center',padding:15}}>
-                <Text style={{ fontSize: 28, height: 50 ,color:'#F08080'
+                <Text style={{ fontSize: 28, height: 50 ,color:'green'
                  }}>Please Login!</Text>
             </View>
             <View style={styles.subContainer}>
@@ -79,7 +79,7 @@ const login = async() => {
                     leftIcon={
                         <Icon
                         name='mail'
-                        color='#F08080'
+                        color='green'
                         size={24}
                         />
                     }
@@ -95,7 +95,7 @@ const login = async() => {
                     leftIcon={
                         <Icon
                         name='lock'
-                        color='#F08080'
+                        color='green'
                         size={24}
                         />
                     }
@@ -108,7 +108,7 @@ const login = async() => {
             <View style={styles.subContainer}>
                 <Button
                 
-                   buttonStyle={{backgroundColor:"#F08080",borderRadius:5}}
+                   buttonStyle={{backgroundColor:"green",borderRadius:5}}
                     title="Login"
                     onPress={() => validatelogin()} />
             </View>
@@ -117,7 +117,7 @@ const login = async() => {
             <TouchableOpacity 
                 onPress={() => { navigation.navigate('Reset')}} >
                 <View style={{alignItems:'flex-end'}} >
-                    <Text style={{color:'#F08080'}}>Forgot Password?</Text>
+                    <Text style={{color:'green'}}>Forgot Password?</Text>
                 </View>
             </TouchableOpacity>
                         
@@ -127,7 +127,7 @@ const login = async() => {
             <View style={styles.subContainer}>
                 <Button
                     style={styles.textInput}
-                    buttonStyle={{backgroundColor:"#F08080",borderRadius:5}}
+                    buttonStyle={{backgroundColor:"green",borderRadius:5}}
                     title="Register"
                     onPress={() => {
                         navigation.navigate('Register');

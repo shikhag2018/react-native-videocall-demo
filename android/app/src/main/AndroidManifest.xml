@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.Manifest.permission.RECORD_AUDIO"/>
     
     <application
       android:name=".MainApplication"
@@ -19,6 +20,7 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+      <activity android:name="com.incomingcall.UnlockScreenActivity" />
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

@@ -29,8 +29,9 @@ function CALL() {
   return (
     
     <Tab.Navigator 
-            activeColor="#e91e63"
-            style={{ backgroundColor: 'tomato' }}>
+            activeColor="white"
+            //style={{ backgroundColor: 'green' }}>
+            barStyle={{ backgroundColor: 'green' }}>
            <Tab.Screen name="Home" component={Home}
                options={{
           tabBarIcon: ({ color }) => (

@@ -1,5 +1,5 @@
 const istate={
-	my_data:"",
+	caller:"",
   callee:""
 }
 
@@ -7,10 +7,10 @@ const reducer=(state=istate,action)=>{
   
   switch(action.type)
   {
-    case 'MY_DATA':{
+    case 'CALLER':{
      return Object.assign(
      	{}, state, {
-     my_data: action.payload,})
+     caller: action.payload,})
      }
     
     case 'CALLEE':{

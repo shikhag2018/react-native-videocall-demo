@@ -59,7 +59,7 @@ const register = async() => {
         <View style={styles.container}>
         	<View style={styles.formContainer}>
         		<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                	<Text style={{ fontSize: 28, height: 50,color:'#F08080' }}>Register Here!</Text>
+                	<Text style={{ fontSize: 28, height: 50,color:'green' }}>Register Here!</Text>
                 </View>
 
         		<View style={styles.subContainer}>
@@ -69,7 +69,7 @@ const register = async() => {
 	                    leftIcon={
 	                        <Icon
 	                        name='mail'
-                            color='#F08080'
+                            color='green'
 	                        size={24}
 	                        />
 	                    }
@@ -85,7 +85,7 @@ const register = async() => {
 	                     leftIcon={
 	                      <Icon
 	                      name="lock"
-                          color='#F08080'
+                          color='green'
 	                      size={25}
 	                      />
 	                     }
@@ -99,7 +99,7 @@ const register = async() => {
 	            <View style={styles.subContainer}>
 	                <Button
 	                    style={styles.textInput}
-                        buttonStyle={{backgroundColor:"#F08080",borderRadius:5}}
+                        buttonStyle={{backgroundColor:"green",borderRadius:5}}
 	                    title="Register"
 	                    onPress={() => validateRegister()} />
                 </View>
@@ -111,7 +111,7 @@ const register = async() => {
                 <View style={styles.subContainer}>
 	                <Button
 	                    style={styles.textInput}
-	                    buttonStyle={{backgroundColor:"#F08080",borderRadius:5}}
+	                    buttonStyle={{backgroundColor:"green",borderRadius:5}}
 	                    title="Login"
 	                    onPress={() => {
 	                        navigation.navigate('Login');

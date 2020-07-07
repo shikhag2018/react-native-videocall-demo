@@ -10,7 +10,10 @@ import {
   Alert
 } from 'react-native';
 import firebase from '@react-native-firebase/app';
-export default class Profile extends React.Component{
+import firestore from '@react-native-firebase/firestore';
+import {connect} from 'react-redux'
+const db =firestore().collection('users');
+class Profile extends React.Component{
 
 signOut=async(props)=>{
    
@@ -27,11 +30,29 @@ signOut=async(props)=>{
 }
 
 render(){
+  console.log(this.props.My_id)
   return(
       <View style={{flex:1,justifyContent:"center",alignItems:'center'}}>
-      <Button title="Logout" onPress={()=>this.signOut()}/>
+      <Text style={{fontSize:15}}>My id: {this.props.My_id}</Text>
+      <Button title="Logout" onPress={()=>{
+        this.signOut().then(()=>{db.removeAllObservers()})}
+      }/>
       </View>
 
     )
 }
 }
+
+const mapStateToProps=(state)=>{ 
+  return {
+    My_id:state.caller,
+    
+  }
+ 
+}
+
+export default connect(mapStateToProps)(Profile);
+
+
+
+

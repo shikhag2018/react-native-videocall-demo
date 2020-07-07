@@ -41,7 +41,7 @@ const reset = async() => {
                     leftIcon={
                         <Icon
                         name='mail'
-                        color='#F08080'
+                        color='green'
                         size={24}
                         />
                     }
@@ -53,7 +53,7 @@ const reset = async() => {
                 <View style={styles.subContainer}>
 	                <Button
 	                    style={styles.textInput}
-	                    buttonStyle={{backgroundColor:"#F08080",borderRadius:5}}
+	                    buttonStyle={{backgroundColor:"green",borderRadius:5}}
 	                    title="Reset"
 	                    onPress={() => reset()} />
                 </View>
@@ -61,7 +61,7 @@ const reset = async() => {
                 <View style={styles.subContainer}>
 	                <Button
 	                    style={styles.textInput}
-	                    buttonStyle={{backgroundColor:"#F08080",borderRadius:5}}
+	                    buttonStyle={{backgroundColor:"green",borderRadius:5}}
 	                    title="Back to Login"
 	                    onPress={() => {
 	                        navigation.navigate('Login');
